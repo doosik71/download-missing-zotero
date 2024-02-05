@@ -108,9 +108,11 @@ def download_file(flie_list: list) -> list:
 
                 with open(path, 'wb') as file:
                     file.write(response.content)
-                print(path, '<==', url)
+                print(f'"{path}" from {url}')
+            else:
+                print(f'Error: cannot download "{path}" from {url}')    
         except:
-            pass
+            print(f'Error: while downloading "{path}" from {url}')
 
 
 def download_missing_zotero(zotero_data_dir: str) -> None:
