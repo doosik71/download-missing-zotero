@@ -16,10 +16,10 @@ python3 dmz.py c:\zotero
 
 ## Notes
 
-- The script will receive command line argument for the path to your Zotero database file.
-- The downloaded files will be saved in the zotero storage directory.
+- The script will receive a command line argument for the path to your Zotero database file.
 - This script accesses your Zotero SQLite database to identify missing attachments and downloads them.
 - Ensure that your Zotero database is not open in Zotero during script execution.
+- The downloaded files will be saved in the zotero storage directory.
 - Use it responsibly and respect copyright and licensing agreements when downloading files.
 
 ## Zotero SQLite Database Table Reference
