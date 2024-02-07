@@ -134,5 +134,7 @@ def download_missing_zotero(zotero_data_dir: str) -> None:
 
 if __name__ == '__main__':
 
-    zotero_data_dir = sys.argv[1] if len(sys.argv) >= 2 else 'D:\\zoterorepo\\Zotero'
-    download_missing_zotero(zotero_data_dir)
+    if len(sys.argv) < 2:
+        print(f'Usage: python dmz.py <zotero_data_dir>')
+    else:
+        download_missing_zotero(sys.argv[1])
