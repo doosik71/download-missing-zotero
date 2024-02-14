@@ -93,26 +93,27 @@ def filter_file_not_exist(file_list: list) -> list:
     return result
 
 
-def download_file(flie_list: list) -> list:
+def download_file(file_list: list) -> list:
+    total_count = len(file_list)
 
-    for path, url in flie_list:
+    for index, [path, url] in enumerate(file_list):
         try:
             response = requests.get(url)
 
             content_type = response.headers.get('Content-Type')
-            if content_type == 'application/pdf':
-                root_path = os.path.dirname(path)
+            root_path = os.path.dirname(path)
 
-                if not os.path.isdir(root_path):
-                    os.makedirs(root_path)
+            if not os.path.isdir(root_path):
+                os.makedirs(root_path)
 
-                with open(path, 'wb') as file:
-                    file.write(response.content)
-                print(f'"{path}" from {url}')
-            else:
-                print(f'Error: cannot download "{path}" from {url}')    
-        except:
-            print(f'Error: while downloading "{path}" from {url}')
+            with open(path, 'wb') as file:
+                file.write(response.content)
+
+            print(f'[{index + 1}/{total_count}] "{path}" from {url}')
+        except Exception as e:
+            print(f'[{index + 1}/{total_count}] [Error] while downloading "{path}" from <{url}> with error = "{e}"')
+            if isinstance(e, KeyboardInterrupt):
+            	break
 
 
 def download_missing_zotero(zotero_data_dir: str) -> None:
