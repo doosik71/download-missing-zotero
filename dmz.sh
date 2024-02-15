@@ -1,1 +1,1 @@
-python dmz.py $HOME/Zotero $HOME/cert.pem
+python dmz.py $HOME/Zotero
