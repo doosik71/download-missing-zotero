@@ -93,30 +93,28 @@ def filter_file_not_exist(file_list: list) -> list:
     return result
 
 
-def download_file(file_list: list) -> list:
+def download_file(file_list: list, cert: str = None) -> list:
     total_count = len(file_list)
 
     for index, [path, url] in enumerate(file_list):
         try:
-            response = requests.get(url)
+            print(f'[{index + 1}/{total_count}] Downloading "{path}" from {url}')
 
-            content_type = response.headers.get('Content-Type')
-            root_path = os.path.dirname(path)
+            file_dir = os.path.dirname(path)
 
-            if not os.path.isdir(root_path):
-                os.makedirs(root_path)
+            if not os.path.isdir(file_dir):
+                os.makedirs(file_dir)
+
+            response = requests.get(url, timeout=60, verify=cert)
+            assert response.ok, 'Response is not ok!'
 
             with open(path, 'wb') as file:
                 file.write(response.content)
-
-            print(f'[{index + 1}/{total_count}] "{path}" from {url}')
-        except Exception as e:
-            print(f'[{index + 1}/{total_count}] [Error] while downloading "{path}" from <{url}> with error = "{e}"')
-            if isinstance(e, KeyboardInterrupt):
-            	break
+        except (EnvironmentError, AssertionError) as e:
+            print(f'[Error] {e}')
 
 
-def download_missing_zotero(zotero_data_dir: str) -> None:
+def download_missing_zotero(zotero_data_dir: str, cert: str = None) -> None:
     print('Reading from', zotero_data_dir)
 
     sqlite_path = os.path.join(zotero_data_dir, 'zotero.sqlite')
@@ -130,12 +128,16 @@ def download_missing_zotero(zotero_data_dir: str) -> None:
     result_filtered = filter_file_not_exist(result_all)
     print('# of attachments without file =', len(result_filtered))
 
-    download_file(result_filtered)
+    download_file(result_filtered, cert)
 
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        print(f'Usage: python dmz.py <zotero_data_dir>')
-    else:
-        download_missing_zotero(sys.argv[1])
+    match len(sys.argv):
+        case 2:
+            download_missing_zotero(sys.argv[1])
+        case 3:
+            download_missing_zotero(sys.argv[1], sys.argv[2])
+        case _:
+            print(f'Usage: python dmz.py <zotero_data_dir> [<cert_pem_path>]')
+        
