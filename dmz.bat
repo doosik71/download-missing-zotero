@@ -1,1 +1,1 @@
-python dmz.py %USERPROFILE%\Zotero
+python dmz.py %USERPROFILE%\Zotero %USERPROFILE%\cert.pem
