@@ -2,12 +2,6 @@
 
 This python script helps you download missing attachment files in Zotero.
 
-## Install the required Python packages
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Run the script
 
 ```bash

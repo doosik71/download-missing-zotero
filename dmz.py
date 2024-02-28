@@ -2,6 +2,8 @@ import os
 import requests
 import sqlite3
 import sys
+import subprocess
+from colorama import init, Fore, Style
 
 
 def get_title_list(sqlite_path: str):
@@ -93,42 +95,60 @@ def filter_file_not_exist(file_list: list) -> list:
     return result
 
 
-def download_file(file_list: list, cert: str = None) -> list:
+def download_file_with_get(file_list: list) -> list:
     total_count = len(file_list)
 
     for index, [path, url] in enumerate(file_list):
         try:
-            print(f'[{index + 1}/{total_count}] Downloading "{path}" from {url}')
+            command = f'curl -o "{path}" {url}'
+            print(f'{Fore.GREEN}[{index + 1}/{total_count}]{Style.RESET_ALL} {command}')
 
             file_dir = os.path.dirname(path)
 
             if not os.path.isdir(file_dir):
                 os.makedirs(file_dir)
 
-            response = requests.get(url, timeout=60, verify=cert)
+            response = requests.get(url, timeout=60)
             assert response.ok, 'Response is not ok!'
 
             with open(path, 'wb') as file:
                 file.write(response.content)
         except (EnvironmentError, AssertionError) as e:
-            print(f'[Error] {e}')
+            print(f'{Fore.RED}[Error]{Style.RESET_ALL} {e}')
 
 
-def download_missing_zotero(zotero_data_dir: str, cert: str = None) -> None:
-    print('Reading from', zotero_data_dir)
+def download_file_with_curl(file_list: list) -> list:
+    total_count = len(file_list)
+
+    for index, [path, url] in enumerate(file_list):
+        try:
+            print(f'{Fore.GREEN}[{index + 1}/{total_count}]{Style.RESET_ALL} curl -o "{path}" {url}')
+
+            file_dir = os.path.dirname(path)
+
+            if not os.path.isdir(file_dir):
+                os.makedirs(file_dir)
+
+            _ = subprocess.run(["curl", "-o", path, url], shell=True, check=True)
+        except (EnvironmentError, AssertionError, subprocess.CalledProcessError) as e:
+            print(f'{Fore.RED}[Error]{Style.RESET_ALL} {e}')
+
+
+def download_missing_zotero(zotero_data_dir: str) -> None:
+    print(f'{Fore.YELLOW}[INFO]{Style.RESET_ALL} Reading from', zotero_data_dir)
 
     sqlite_path = os.path.join(zotero_data_dir, 'zotero.sqlite')
     storage_path = os.path.join(zotero_data_dir, 'storage')
 
     result_all = get_attachment_list(sqlite_path)
-    print('# of attachments =', len(result_all))
+    print(f'{Fore.YELLOW}[INFO]{Style.RESET_ALL} # of attachments =', len(result_all))
 
     result_all = convert_path(result_all, storage_path)
 
     result_filtered = filter_file_not_exist(result_all)
-    print('# of attachments without file =', len(result_filtered))
+    print(f'{Fore.YELLOW}[INFO]{Style.RESET_ALL} # of attachments without file =', len(result_filtered))
 
-    download_file(result_filtered, cert)
+    download_file_with_curl(result_filtered)
 
 
 if __name__ == '__main__':
@@ -136,8 +156,5 @@ if __name__ == '__main__':
     match len(sys.argv):
         case 2:
             download_missing_zotero(sys.argv[1])
-        case 3:
-            download_missing_zotero(sys.argv[1], sys.argv[2])
         case _:
-            print(f'Usage: python dmz.py <zotero_data_dir> [<cert_pem_path>]')
-        
+            print(f'{Fore.CYAN}[Usage]{Style.RESET_ALL} python dmz.py <zotero_data_dir>')
